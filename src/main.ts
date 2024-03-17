@@ -29,10 +29,13 @@ import {
 import { DataviewInit } from "ui/markdown";
 import { inlinePlugin } from "./ui/lp-render";
 import { Extension } from "@codemirror/state";
+import { StyleProvider } from "util/style-provider";
 
 export default class DataviewPlugin extends Plugin {
     /** Plugin-wide default settings. */
     public settings: DataviewSettings;
+
+    private customStyles: StyleProvider;
 
     /** The index that stores all dataview data. */
     public index: FullIndex;
@@ -52,6 +55,11 @@ export default class DataviewPlugin extends Plugin {
                 if (this.settings.refreshEnabled) this.debouncedRefresh();
             })
         );
+
+        this.customStyles = new StyleProvider(`${this.manifest.name}@${this.manifest.version}`);
+
+        // Set up settings listeners.
+        this.updateSettingListeners(this.settings);
 
         // Set up automatic (intelligent) view refreshing that debounces.
         this.updateRefreshSettings();
@@ -174,6 +182,7 @@ export default class DataviewPlugin extends Plugin {
     }
 
     public onunload() {
+        this.customStyles.detach();
         console.log(`Dataview: version ${this.manifest.version} unloaded.`);
     }
 
@@ -287,8 +296,25 @@ export default class DataviewPlugin extends Plugin {
         }
     }
 
+    private updateSettingListeners(settings: Partial<DataviewSettings>) {
+        for (const [key, value] of Object.entries(settings)) {
+            switch (key) {
+                case "dataviewJsKeyword":
+                    this.customStyles.setStyle(
+                        "codeblock scrolling during inline-edit",
+                        `div.block-language-${value} {
+                            overflow-x: auto;
+                        }`
+                    );
+                    // TODO: add support for syntax highlighting during inline editing
+                    break;
+            }
+        }
+    }
+
     /** Update plugin settings. */
     async updateSettings(settings: Partial<DataviewSettings>) {
+        this.updateSettingListeners(settings);
         Object.assign(this.settings, settings);
         this.updateRefreshSettings();
         await this.saveData(this.settings);
