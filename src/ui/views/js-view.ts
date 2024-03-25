@@ -2,11 +2,12 @@ import { asyncEvalInContext, DataviewInlineApi } from "api/inline-api";
 import { renderErrorPre, renderValue } from "ui/render";
 import { DataviewRefreshableRenderer } from "ui/refreshable-view";
 import { DataviewApi } from "api/plugin-api";
+import { Component, MarkdownPostProcessorContext } from "obsidian";
 
 export class DataviewJSRenderer extends DataviewRefreshableRenderer {
     static PREAMBLE: string = "const dataview = this;const dv = this;";
 
-    constructor(public api: DataviewApi, public script: string, public container: HTMLElement, public origin: string) {
+    constructor(public api: DataviewApi, public script: string, public container: HTMLElement, public origin: string, public component: Component | MarkdownPostProcessorContext) {
         super(container, api.index, api.app, api.settings);
     }
 

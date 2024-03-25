@@ -462,7 +462,7 @@ export class DataviewApi {
             renderCodeBlock(container, code, "javascript");
             return;
         }
-        const renderer = new DataviewJSRenderer(this, code, container, filePath);
+        const renderer = new DataviewJSRenderer(this, code, container, filePath, component);
         renderer.load();
         component.addChild(renderer);
     }
